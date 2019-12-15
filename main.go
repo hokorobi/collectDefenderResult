@@ -18,7 +18,8 @@ func main() {
 
 func _main() error {
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: %s [-f name][-l num][dir]\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %s [Options][dir]\n", os.Args[0])
+		fmt.Println("Options:")
 		flag.PrintDefaults()
 	}
 	var (

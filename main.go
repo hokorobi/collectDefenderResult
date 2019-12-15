@@ -23,13 +23,10 @@ func _main() error {
 		flag.PrintDefaults()
 	}
 	var (
-		fname   string
-		lnum    int
-		outfile string
+		fname   = flag.String("f", "hoge", "読み込むファイルの名前")
+		lnum    = flag.Int("l", 4, "ファイルから何行目を取得するか")
+		outfile = flag.String("o", "", "結果の出力先ファイルパス")
 	)
-	flag.StringVar(&fname, "f", "hoge", "読み込むファイルの名前")
-	flag.IntVar(&lnum, "l", 4, "ファイルから何行目を取得するか")
-	flag.StringVar(&outfile, "o", "", "結果の出力先")
 
 	flag.Parse()
 
@@ -39,7 +36,7 @@ func _main() error {
 	if err != nil {
 		return err
 	}
-	err = filepath.Walk(dir, execWalkFunc(fname, lnum, outfile))
+	err = filepath.Walk(dir, execWalkFunc(*fname, *lnum, *outfile))
 	if err != nil {
 		return err
 	}
@@ -83,7 +80,7 @@ func execWalkFunc(fname string, lnum int, outfile string) filepath.WalkFunc {
 
 		s := bufio.NewScanner(fp)
 		for i := 1; s.Scan(); i++ {
-			if i != lnum {
+			if i < lnum {
 				continue
 			}
 

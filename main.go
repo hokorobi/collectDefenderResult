@@ -81,7 +81,8 @@ func execWalkFunc(fname string, lnum int) filepath.WalkFunc {
 		s := bufio.NewScanner(fp)
 		for i := 1; s.Scan(); i++ {
 			if i == lnum {
-				fmt.Printf("%s\t%s\n", filepath.Base(filepath.Dir(path)), s.Text())
+				parentDir := filepath.Base(filepath.Dir(path))
+				fmt.Printf("%s\t%s\n", parentDir, s.Text())
 				return nil
 			}
 		}

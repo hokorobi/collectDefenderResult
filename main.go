@@ -59,9 +59,9 @@ func getDir() (string, error) {
 		return "", err
 	}
 	if !f.IsDir() {
-		return "", errors.New("Is not exists.")
+		return "", errors.New("Is not directory.")
 	}
-	return dir, nil
+	return "", errors.New("An unexpected result.")
 }
 
 func execWalkFunc(fname string, lnum int) filepath.WalkFunc {

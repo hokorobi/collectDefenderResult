@@ -22,11 +22,13 @@ func _main() error {
 		flag.PrintDefaults()
 	}
 	var (
-		fname string
-		lnum  int
+		fname   string
+		lnum    int
+		outfile string
 	)
 	flag.StringVar(&fname, "f", "hoge", "読み込むファイルの名前")
 	flag.IntVar(&lnum, "l", 4, "ファイルから何行目を取得するか")
+	flag.StringVar(&outfile, "o", "", "結果の出力先")
 
 	flag.Parse()
 
@@ -36,7 +38,7 @@ func _main() error {
 	if err != nil {
 		return err
 	}
-	err = filepath.Walk(dir, execWalkFunc(fname, lnum))
+	err = filepath.Walk(dir, execWalkFunc(fname, lnum, outfile))
 	if err != nil {
 		return err
 	}
@@ -64,7 +66,7 @@ func getDir() (string, error) {
 	return "", errors.New("An unexpected result.")
 }
 
-func execWalkFunc(fname string, lnum int) filepath.WalkFunc {
+func execWalkFunc(fname string, lnum int, outfile string) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil
@@ -80,11 +82,33 @@ func execWalkFunc(fname string, lnum int) filepath.WalkFunc {
 
 		s := bufio.NewScanner(fp)
 		for i := 1; s.Scan(); i++ {
-			if i == lnum {
-				parentDir := filepath.Base(filepath.Dir(path))
-				fmt.Printf("%s\t%s\n", parentDir, s.Text())
-				return nil
+			if i != lnum {
+				continue
 			}
+
+			parentDir := filepath.Base(filepath.Dir(path))
+			var w *bufio.Writer
+			if outfile == "" {
+				w = bufio.NewWriter(os.Stdout)
+			} else {
+				fpo, err := os.OpenFile(outfile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+				if err != nil {
+					return err
+				}
+				defer fpo.Close()
+
+				w = bufio.NewWriter(fpo)
+			}
+			_, err := fmt.Fprintf(w, "%s\t%s\n", parentDir, s.Text())
+			if err != nil {
+				return err
+			}
+			err = w.Flush()
+			if err != nil {
+				return err
+			}
+			return nil
+
 		}
 		return nil
 	}
